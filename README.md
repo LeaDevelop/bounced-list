@@ -4,5 +4,5 @@ It is based on reading .eml file and fetching email address which did not receiv
 
 ## Requirements
 Requirements for project to run with success are:
-- have installed Python 3. It was tested and implemented on version 3.13.
+- have installed [Python](https://www.python.org/downloads/). It was tested and implemented on version 3.13.1
 - known directory with .eml files
