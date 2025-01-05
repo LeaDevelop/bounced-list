@@ -57,7 +57,7 @@ def extract_email_recipients():
 
                 # Search for Delivered-To: and Original-Recipient: lines
                 for line in content.split('\n'):
-                    if line.startswith('Delivered-To:') or line.startswith('Original-Recipient:'):
+                    if line.startswith('Final-Recipient:'):
                         # Extract email using regex pattern
                         found_emails = re.findall(EMAIL_PATTERN, line)
 
