@@ -27,11 +27,19 @@ import glob # For global pattern matching, used for finding all *.eml files.
 import sys # System specific parameters and functions, used for error handling sys.exit(1).
 import re # Regular expression, used for extracting email addresses.
 
+result_dir = "Result"
+if not os.path.exists(result_dir):
+    os.makedirs(result_dir)
+
 # Constants
 DIRECTORY = r'C:\projects\dev\bouncedList\bounced-files' # TODO specify directory where you got all the bounced .eml files & update .gitignore.
 EXCLUDED_EMAILS = ['noreply@example.com', 'test@example.com'] # TODO remove examples & replace with your no-reply email address.
 EMAIL_PATTERN = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 OUTPUT_FILE = 'bounced-list.txt' # TODO specify file name where you want all unique bounced email addresses & update .gitignore.
+OUTPUT_FILE_PATH = os.path.join(result_dir, OUTPUT_FILE)
+NOT_PROCESSED_FILE = "not-processed-list.txt"
+NOT_PROCESSED_FILE_PATH = os.path.join(result_dir, "not-processed-list.txt")
+
 
 def extract_email_recipients():
     # Check if directory exists
@@ -47,7 +55,10 @@ def extract_email_recipients():
         print(f"Error: No .eml files found in '{DIRECTORY}'")
         sys.exit(1)
 
+    # Create a list to store files without Final-Recipient
+    not_processed_files = []
     recipients = []
+    processed_files_count = 0
 
     # Process each .eml file
     for file_path in eml_files:
@@ -55,9 +66,13 @@ def extract_email_recipients():
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
-                # Search for Delivered-To: and Original-Recipient: lines
+                # Flag to track if Final-Recipient was found
+                final_recipient_found = False
+
+                # Search for "Final-Recipient:" lines
                 for line in content.split('\n'):
                     if line.startswith('Final-Recipient:'):
+                        final_recipient_found = True
                         # Extract email using regex pattern
                         found_emails = re.findall(EMAIL_PATTERN, line)
 
@@ -65,21 +80,37 @@ def extract_email_recipients():
                             # Only add email if it's not in the excluded list
                             if email.lower() not in [e.lower() for e in EXCLUDED_EMAILS]:
                                 recipients.append(email)
+
+                # Count files based on whether they were processed
+                if final_recipient_found:
+                    processed_files_count += 1
+                else:
+                    not_processed_files.append(file_path)
+
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
+            not_processed_files.append(file_path)
 
-    # Remove duplicates while preserving order
-    recipients = list(dict.fromkeys(recipients))
+    # Fetch only unique recipients
+    unique_recipients = list(set(recipients))
 
-    # Write recipients to a .txt file
-    try:
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as output_file:
-            for recipient in recipients:
-                output_file.write(recipient + '\n')
-        print(f"Successfully extracted {len(recipients)} unique recipients to {OUTPUT_FILE}")
-    except Exception as e:
-        print(f"Error writing to {OUTPUT_FILE}: {e}")
+    # Write processed email addresses to a file
+    with open(OUTPUT_FILE_PATH, 'w', encoding='utf-8') as f:
+        for email in unique_recipients:
+            f.write(f"{email}\n")
 
+    # Not processed files noted into a file
+    if not_processed_files:
+        with open(NOT_PROCESSED_FILE_PATH, 'w', encoding='utf-8') as f:
+            for file_path in not_processed_files:
+                f.write(f"{file_path}\n")
+
+
+    total_files = processed_files_count + len(not_processed_files)
+    print(f"Total files processed: {total_files}")
+    print(f"Files with Final-Recipient: {processed_files_count}")
+    print(f"Files without Final-Recipient: {len(not_processed_files)}")
+    print(f"Successfully extracted {len(unique_recipients)} unique recipients, look into Result/{OUTPUT_FILE}")
 
 if __name__ == "__main__":
     extract_email_recipients()
