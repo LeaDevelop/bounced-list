@@ -1,6 +1,8 @@
 # Project files and directories
-bounced-list.txt
+/Result/
 /bounced-files/
+bounced-list.txt
+not-processed-list.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
