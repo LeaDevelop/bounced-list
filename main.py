@@ -99,12 +99,23 @@ def extract_email_recipients():
         for email in unique_recipients:
             f.write(f"{email}\n")
 
-    # Not processed files noted into a file
+    # Not processed files noted into a file with file names and emails
     if not_processed_files:
         with open(NOT_PROCESSED_FILE_PATH, 'w', encoding='utf-8') as f:
+            # First write file path and name
+            f.write("#### Files not processed ####\n")
             for file_path in not_processed_files:
                 f.write(f"{file_path}\n")
 
+            # Then write all extracted emails, stripping underscores
+            f.write("\n#### Emails extracted from filenames ####\n")
+            for file_path in not_processed_files:
+                filename_emails = re.findall(EMAIL_PATTERN, os.path.basename(file_path))
+                for email in filename_emails:
+                    if email.lower() not in [e.lower() for e in EXCLUDED_EMAILS]:
+                        # Strip underscore from the beginning of the email
+                        cleaned_email = email.lstrip('_')
+                        f.write(f"{cleaned_email}\n")
 
     total_files = processed_files_count + len(not_processed_files)
     print(f"Total files processed: {total_files}")
