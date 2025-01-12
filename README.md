@@ -5,6 +5,7 @@ It is based on reading .eml file and fetching email address which did not receiv
 ## Requirements
 Requirements for project to run with success are:
 - have installed [Python](https://www.python.org/downloads/). It was tested and implemented on version 3.13.1
+  - useful guide on how to setup Python in Windows OS: https://realpython.com/python-coding-setup-windows/ 
 - have prepared .eml files
 
 ## First run of main.py
